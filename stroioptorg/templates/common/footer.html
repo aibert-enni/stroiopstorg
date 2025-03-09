@@ -1,0 +1,99 @@
+{% load static %}
+
+<footer class="bg-[#F3F4F5]">
+    <div class="container divide-y">
+        <div class="flex flex-wrap items-center justify-center md:justify-between gap-x-[20px] py-4 text-sm gap-y-5">
+            <div class="flex items-center gap-x-[20px]">
+                <img src="{% static 'images/logo.svg' %}" alt="" class="w-[159px] h-[40px]"/>
+                <p class="hidden xl:block text-[#35383A]">ООО «Стройоптторг» </p>
+            </div>
+            <div class="flex items-center *:font-medium gap-[20px]">
+                <p class="text-[#35383A] hidden xl:block">ИНН: 0901051787<br>КПП 090101001 </p>
+                <p class="">Email:<br><a class="text-[#117FE3] underline" href="mailto:info@stroiopttorg.ru">info@stroiopttorg.ru</a>
+                </p>
+            </div>
+            <div class="flex items-center gap-2.5 xl:gap-[20px] justify-between">
+                <div class="flex flex-col items-end gap-1">
+                    <p class="text-[18px] text-black font-medium">8 800 444 00 65</p>
+                    <p class="text-[#4E5760]">Ежедневно, с 8:00 до 18:00</p>
+                </div>
+                <button role="button"
+                        class="uppercase px-[15.5px] py-[16px]  rounded border-solid border border-[#EE0906] text-[#474B4E] font-bold text-[11px]">
+                    Заказать звонок
+                </button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-[30px] md:divide-y-0">
+            <div class="divide-y lg:col-span-1 md:divide-y-0">
+                <button id="footer-information-btn" role="button"
+                        class="flex w-full md:cursor-default justify-between items-center py-[11px] text-[#333436] font-medium text-[17px]">
+                    Информация
+                    <img class="md:hidden" src="{% static 'images/dropdown-arrow.svg' %}" alt=""/>
+                </button>
+                <div id="footer-information-content"
+                     class="grid overflow-hidden md:overflow-visible max-h-0 md:max-h-full transition-all ease-in-out duration-500 grid-cols-2 md:py-[15px]  gap-y-[15px] gap-x-[30px] md:gap-x-[74px] *:text-[#404244] *:text-[15px] md:*:text-[14px] hover:*:underline">
+                    <a href="#">О компании</a>
+                    <a href="#">Доставка</a>
+                    <a href="#">Отзывы</a>
+                    <a href="#">Новости</a>
+                    <a href="#">Вход \ Регистрация</a>
+                    <a href="#">Оплата</a>
+                    <a href="#">Возврат</a>
+                    <a href="#">Вопрос-ответ</a>
+                    <a href="#">Контакты</a>
+                    <a href="#">Все акции</a>
+                </div>
+            </div>
+            <div class="divide-y lg:col-span-2 md:divide-y-0">
+                <button id="footer-catalog-btn" role="button"
+                        class="flex w-full md:cursor-default justify-between items-center py-[11px] text-[#333436] font-medium text-[17px]">
+                    Каталог
+                    <img class="md:hidden" src="{% static 'images/dropdown-arrow.svg' %}" alt=""/>
+                </button>
+                <div id="footer-catalog-content"
+                     class="grid overflow-hidden md:overflow-visible max-h-0 md:max-h-full transition-all ease-in-out duration-500 grid-cols-2 xl:grid-cols-3 md:py-[15px]  gap-y-[15px] gap-x-[30px] *:text-[#404244] *:text-[15px] md:*:text-[14px] hover:*:underline">
+                    <a href="#">Общестроительные материалы</a>
+                    <a href="#">Все для сауны и бани</a>
+                    <a href="#">Инструмент</a>
+                    <a href="#">Отделочные материалы</a>
+                    <a href="#">Товары для дома, сада и огорода</a>
+                    <a href="#">Водо-газоснабжение, отопление, вентиляция</a>
+                    <a href="#">Вопрос-ответ</a>
+                    <a href="#">Электротовары</a>
+                    <a href="#">Сантехника</a>
+                    <a href="#">Столярные изделия</a>
+                    <a href="#">Спецодежда и средства индивидуальной пожарной защиты</a>
+                    <a href="#">Метизные, такелажные и скобяные изделия</a>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col xl:grid grid-cols-2 gap-y-[20px] py-[18px] xl:py-[27px] gap-x-[18px] xl:gap-x-[50px]">
+            <div class="flex flex-col gap-y-[20px]">
+                <p class="text-[#979DA3] hidden 2xl:block">Мы принимаем к оплате:</p>
+                <div class="flex flex-wrap gap-[23px] md:gap-0 justify-center md:justify-between *:opacity-20">
+                    <img src="{% static 'images/visa.svg' %}" alt=""/>
+                    <img src="{% static 'images/mastercard.svg' %}" alt=""/>
+                    <img src="{% static 'images/sberbank.svg' %}" alt=""/>
+                    <img src="{% static 'images/mir.svg' %}" alt=""/>
+                    <img src="{% static 'images/halva.svg' %}" alt=""/>
+                    <img src="{% static 'images/tinkoff.svg' %}" alt=""/>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-y-[10px] gap-x-[37px]">
+                <p class="font-medium text-[#4C5054]">Подпишитесь на рассылку и будьте в курсе!</p>
+                <form class="flex w-full justify-between items-center p-[20px] gap-[10px] rounded bg-white">
+                    {% csrf_token %}
+                    <input class="focus:outline-0 w-full" type="email" placeholder="Ваш email"/>
+                    <button type="submit">
+                        <img src="{% static 'images/email-send-arrow.svg' %}"
+                             alt="Кнопка для отправки вашей почты, что бы получать рассылку"/>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="flex flex-col items-center gap-y-[10px] py-[20px]">
+            <p class="text-[#81868B] text-[13px] text-center">© 2003-2023 Интернет-магазин ООО «Стройоптторг» р/с 40702810360000102415 в Ставропольское отделение №5230 ПАО Сбербанк, БИК 040702615</p>
+            <p class="text-[#444648] text-sm underline">Политика конфиденциальности</p>
+        </div>
+    </div>
+</footer>

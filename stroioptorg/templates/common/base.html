@@ -1,0 +1,269 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stroioptorg - {{ title }}</title>
+    {% block css %}
+    {% endblock %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body>
+{% include 'common/header.html' %}
+<main class="container">
+    {% block content %}
+    {% endblock %}
+</main>
+{% include 'common/footer.html' %}
+<script src="{% static 'jquery-3.7.1/jquery-3.7.1.min.js' %}"></script>
+{% block script %}
+{% endblock %}
+<script>
+    const domen_url = 'http://localhost:8000';
+    
+    const search_input = document.querySelector('#search-input');
+
+    const blue_bg = document.querySelector('#blue-bg');
+
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        search_input.placeholder = 'Поиск...'
+    }
+
+    burger()
+    catalog()
+
+    function burger() {
+        const burger_btn = document.querySelector('#burger-btn');
+        const burger_menu = document.querySelector('#burger-menu');
+        const burger_close_btn = document.querySelector('#burger-close-btn');
+        const burger_menu_content = burger_menu.querySelector('div');
+        burger_btn.addEventListener('click', () => {
+            burger_menu.classList.toggle('-translate-x-full');
+            if (!burger_menu.classList.contains('-translate-x-full')) {
+                blue_bg.classList.toggle('invisible');
+            }
+        })
+        burger_close_btn.addEventListener('click', () => {
+            burger_menu.classList.toggle('-translate-x-full');
+            blue_bg.classList.toggle('invisible');
+        })
+        burger_menu.addEventListener('click', (event) => {
+            if (!burger_menu_content.contains(event.target)) {
+                burger_menu.classList.toggle('-translate-x-full');
+                blue_bg.classList.toggle('invisible');
+            }
+        })
+    }
+
+    async function catalog() {
+        async function fetchCategories() {
+            try {
+                const response = await fetch('/catalog/tree'); // Замените на ваш URL
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка! Статус: ${response.status}`);
+                }
+                const data = await response.json(); // Сохраняем данные в переменную
+                return data; // Возвращаем данные
+            } catch (error) {
+                console.error('Ошибка при получении данных:', error);
+            }
+        }
+
+        const category_data = await fetchCategories();
+
+        const catalog = document.querySelector('#catalog');
+        const catalog_content = document.querySelector('#catalog-content');
+
+        const catalog_btn = document.querySelector('#catalog-btn');
+        const catalog_close_btns = document.querySelectorAll('.catalog-close-btn');
+        const close_icon = document.querySelector('.close-icon');
+
+        const subcategory_back_btn = document.querySelector('#subcategory-back-btn');
+        const products_types_back_btn = document.querySelector('#products-types-back-btn');
+
+        const catalog_category_wrapper = document.querySelector('#catalog-category-wrapper');
+        const catalog_subcategory_wrapper = document.querySelector('#catalog-subcategory-wrapper');
+        const products_types_wrapper = document.querySelector('#catalog-products-types-wrapper');
+
+        const catalog_category = document.querySelector('#catalog-category');
+        const catalog_subcategory = document.querySelector('#catalog-subcategory');
+        const products_types = document.querySelector('#catalog-products-types');
+
+        const catalog_subcategory_title = document.querySelector('#subcategory-title');
+        const products_types_title = document.querySelector('#products-types-title');
+
+        const category_fragment = document.createDocumentFragment();
+
+        init_catalog()
+
+        catalog_btn.addEventListener('click', () => {
+
+            catalog_btn.classList.toggle('bg-primary');
+            catalog_btn.classList.toggle('bg-black');
+            close_icon.classList.toggle('cross');
+
+            if (window.matchMedia('(max-width: 767px)').matches) {
+                catalog.classList.toggle('-translate-x-full');
+                blue_bg.classList.toggle('invisible');
+            } else {
+                catalog.classList.toggle('md:invisible');
+            }
+
+        });
+
+        catalog_close_btns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                catalog_btn.classList.toggle('bg-primary');
+                catalog_btn.classList.toggle('bg-black');
+                close_icon.classList.toggle('cross');
+                if (window.matchMedia('(max-width: 767px)').matches) {
+                    catalog.classList.toggle('-translate-x-full');
+                    blue_bg.classList.toggle('invisible');
+                } else {
+                    catalog.classList.toggle('md:invisible');
+                }
+            });
+        })
+
+        subcategory_back_btn.addEventListener('click', () => {
+            catalog_category_wrapper.classList.toggle('hidden');
+            catalog_subcategory_wrapper.classList.toggle('hidden');
+        });
+
+        products_types_back_btn.addEventListener('click', () => {
+            catalog_subcategory_wrapper.classList.toggle('hidden');
+            products_types_wrapper.classList.toggle('hidden');
+        })
+
+        if (window.matchMedia('(max-width: 767px)').matches) {
+            catalog.addEventListener('click', (event) => {
+                if (!catalog_content.contains(event.target)) {
+                    catalog_btn.classList.toggle('bg-primary');
+                    catalog_btn.classList.toggle('bg-black');
+                    close_icon.classList.toggle('cross');
+                    if (window.matchMedia('(max-width: 767px)').matches) {
+                        catalog.classList.toggle('-translate-x-full');
+                        blue_bg.classList.toggle('invisible');
+                    } else {
+                        catalog.classList.toggle('md:invisible');
+                    }
+                }
+            })
+        }
+
+        function init_catalog() {
+            for (let i = 0; i < category_data.length; i++) {
+                let category_element = document.createElement('div');
+                category_element.classList.add('category', 'flex', 'justify-between', 'items-center', 'px-[15px]', 'md:px-6', 'py-3.5');
+                category_element.id = `category-${i}`
+                category_element.innerHTML = `
+            <a href="${domen_url}/catalog/${category_data[i].url}" class="uppercase font-medium text-sm">${category_data[i].name}</a>
+                <img src="{% static 'images/catalog-arrow-icon.svg' %}" alt="Иконка стрелки для категории"/>
+            `
+
+                category_element.addEventListener('mouseenter', () => {
+                    show_subcategory(i)
+                })
+                if (window.matchMedia('(max-width: 767px)').matches) {
+                    category_element.addEventListener('click', () => {
+                        catalog_category_wrapper.classList.toggle('hidden');
+                        catalog_subcategory_title.textContent = `${category_data[i].name}`;
+                        show_subcategory(i)
+                        catalog_subcategory_wrapper.classList.toggle('hidden');
+                    })
+                }
+                category_fragment.append(category_element);
+            }
+            catalog_category.append(category_fragment);
+
+            show_subcategory(0)
+        }
+
+        function show_subcategory(category_id) {
+            const category_elements = document.querySelectorAll('.category');
+
+            category_elements.forEach((category) => category.classList.remove('bg-primary', 'text-white'));
+            category_elements.forEach((category) => {
+                category.querySelector('img').src = "{% static 'images/catalog-arrow-icon.svg' %}";
+            });
+
+            const element = document.getElementById(`category-${category_id}`);
+            element.classList.add('bg-primary', 'text-white');
+            element.querySelector('img').src = "{% static 'images/white-catalog-arrow-icon.svg' %}";
+
+            const subcategory_data = category_data[category_id].children;
+            const subcategory_fragment = document.createDocumentFragment();
+            for (let i = 0; i < subcategory_data.length; i++) {
+                let subcategory_element = document.createElement('div');
+                subcategory_element.classList.add('subcategory', 'flex', 'justify-between', 'items-center', 'md:px-6', 'py-3.5')
+                subcategory_element.id = `subcategory-${i}`;
+                subcategory_element.innerHTML = `
+                <a href="${domen_url}/catalog/${subcategory_data[i].url}" class="font-medium text-sm">${subcategory_data[i].name}</a>
+                <img src="{% static 'images/catalog-arrow-icon.svg' %}" alt="Иконка стрелки для категории"/>
+                `
+
+                subcategory_element.addEventListener('mouseenter', () => {
+                    show_products_types(category_id, i)
+                });
+                if (window.matchMedia('(max-width: 767px)').matches) {
+                    subcategory_element.addEventListener('click', () => {
+                        catalog_subcategory_wrapper.classList.toggle('hidden');
+                        products_types_title.textContent = `${subcategory_data[i].name}`;
+                        show_products_types(category_id, i)
+                        products_types_wrapper.classList.toggle('hidden');
+                    })
+                }
+
+                subcategory_fragment.append(subcategory_element);
+            }
+            products_types.innerHTML = '';
+            catalog_subcategory.innerHTML = '';
+            catalog_subcategory.appendChild(subcategory_fragment);
+        }
+
+        function show_products_types(category_id, subcategory_id) {
+            const subcategory_elements = document.querySelectorAll('.subcategory');
+            subcategory_elements.forEach((subcategory) => subcategory.classList.remove('text-[#186FD4]'));
+            const element = document.getElementById(`subcategory-${subcategory_id}`);
+            element.classList.add('text-[#186FD4]');
+
+
+            const products_types_data = category_data[category_id].children[subcategory_id].children;
+            const products_types_fragment = document.createDocumentFragment();
+
+            for (let i = 0; i < products_types_data.length; i++) {
+                let products_types_element = document.createElement('li');
+                products_types_element.classList.add('product', 'text-sm', 'text-[#26292D]', 'py-[15px]');
+                products_types_element.innerHTML = `
+                    <a href="${domen_url}/catalog/${products_types_data[i].url}">${products_types_data[i].name}</a>
+                `
+                products_types_fragment.appendChild(products_types_element);
+            }
+            products_types.innerHTML = '';
+            products_types.appendChild(products_types_fragment);
+        }
+    }
+</script>
+<script>
+    const footer_information_btn = document.querySelector('#footer-information-btn');
+    const footer_information_content = document.querySelector('#footer-information-content');
+
+    const footer_catalog_btn = document.querySelector('#footer-catalog-btn');
+    const footer_catalog_content = document.querySelector('#footer-catalog-content');
+
+    footer_information_btn.addEventListener('click', () => {
+        footer_information_content.classList.toggle('max-h-0');
+        footer_information_content.classList.toggle('max-h-[500px]');
+        footer_information_content.classList.toggle('py-[15px]');
+    });
+
+    footer_catalog_btn.addEventListener('click', () => {
+        footer_catalog_content.classList.toggle('max-h-0');
+        footer_catalog_content.classList.toggle('max-h-[500px]');
+        footer_catalog_content.classList.toggle('py-[15px]');
+    });
+</script>
+</body>
+</html>

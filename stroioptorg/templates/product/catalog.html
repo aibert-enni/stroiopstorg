@@ -1,0 +1,432 @@
+ {% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="mt-[9px] mb-[110px]">
+        <div id="catalog-header" class="flex gap-[18px] items-center mb-[40px]">
+            <h1 class="font-bold text-[30px] text-[#2C333D]">{{ category.name }}</h1>
+            <p id="total-count" class="text-[#6C7177]">{{ total_products }} товаров</p>
+        </div>
+        <div class="flex gap-[20px]">
+            <div class="flex flex-col gap-[40px]">
+                <div class="flex flex-col gap-[18px]">
+                    <p class="filter-title">Цена, ₽</p>
+                    <div class="flex gap-[18px]">
+                        <div class="flex border border-[#DFE0E2] rounded px-[15px] py-[13px] gap-[5px]">
+                            <p class="text-[#A7AAAE]">от</p>
+                            <input id="price-from-input" class="focus:outline-0 max-w-[60px]" type="number">
+                        </div>
+                        <div class="flex border border-[#DFE0E2] rounded px-[15px] py-[13px] gap-[5px]">
+                            <p class="text-[#A7AAAE]">до</p>
+                            <input id="price-to-input" class="focus:outline-0 max-w-[60px]" type="number">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-10">
+                    {% for type,values in filters.items %}
+                        <div class="flex flex-col gap-[18px]">
+                            <p class="filter-title">{{ values.name }}</p>
+                            <ul class="flex flex-col gap-4">
+                                {% for value in values.values %}
+                                    <li class="flex">
+                                        <label class="text-[#363839] flex items-center"><input
+                                                class="filter filter-checkbox relative mr-2 w-[26px] h-[26px] accent-[#186FD4] border rounded border-[#DFE0E2] appearance-none"
+                                                data-id="{{ value.id }}"
+                                                data-type="{{ type }}"
+                                                type="checkbox">{{ value.value }}</label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button id="filters-request-btn"
+                        class="bg-primary text-white text-[13px] font-bold rounded py-[15px] uppercase">Применить
+                    фильтры
+                </button>
+            </div>
+            <div>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2.5">
+                        <p>Сортировка:</p>
+                        <div class="relative inline-block text-left">
+                            <button data-order-type="" id="order-btn"
+                                    class="inline-flex items-center gap-[30px] px-4 py-2 rounded border border-[#DFE0E2]">
+                                <span id="order-text"></span>
+                                <img src="{% static 'images/dropdown-arrow.svg' %}"
+                                     alt="Иконка для сортировки каталога">
+                            </button>
+
+                            <div class="dropdown-content absolute hidden bg-white shadow-lg rounded *:rounded w-full *:w-full mt-2">
+                                <button data-order-type="price"
+                                        class="order-option inline-flex px-4 py-2 hover:bg-gray-200">По возрастанию цены
+                                </button>
+                                <button data-order-type="-price"
+                                        class="order-option inline-flex px-4 py-2 hover:bg-gray-200">По убыванию цены
+                                </button>
+                                <button data-order-type="-created_at"
+                                        class="order-option inline-flex px-4 py-2 hover:bg-gray-200">По новинкам
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <p>Показать по:</p>
+                        <div class="flex items-center gap-2.5">
+                            <button class="paginate_by rounded border border-[#EEEEEE] hover:border-none hover:bg-[#F6F8FB] hover:text-[#186FD4] w-[50px] h-[45px]">
+                                9
+                            </button>
+                            <button class="paginate_by rounded border border-[#EEEEEE] hover:border-none hover:bg-[#F6F8FB] hover:text-[#186FD4] w-[50px] h-[45px]">
+                                12
+                            </button>
+                            <button class="paginate_by rounded border border-[#EEEEEE] hover:border-none hover:bg-[#F6F8FB] hover:text-[#186FD4] w-[50px] h-[45px]">
+                                18
+                            </button>
+                            <button class="paginate_by rounded border border-[#EEEEEE] hover:border-none hover:bg-[#F6F8FB] hover:text-[#186FD4] w-[50px] h-[45px]">
+                                24
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="products-container"
+                     class="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 mb-[90px] gap-[17px]">
+                    {% for product in products %}
+                        <article class="flex h-full w-full flex-col px-[15px] gap-2.5">
+                            <div class="p-3.5">
+                                <img class="w-[248px] h-[202px]" src="{{ product.cover.image.url }}"
+                                     alt="{{ product.name }}"/>
+                            </div>
+                            <p style="color: #A8ADB2;" class="text-sm text-[#A8ADB2]">Артикул: {{ product.sku }}</p>
+                            <p class="font-medium text-lg leading-[26px] py-2.5">{{ product.name }}</p>
+                            <div class="flex items-center">
+                                {% if product.discount and product.discount > 0 %}
+                                    <del style="color: #8F9296;" class="mr-2.5">{{ product.price }} ₽</del>
+                                {% endif %}
+                                <p style="color: #003B73;"
+                                   class="font-semibold text-xl text-[#003B73] mr-[7px]">{{ product.get_discount_price }}
+                                    ₽</p>
+                                {% if product.discount and product.discount > 0 %}
+                                    <p class="bg-[#1B9665] py-[3px] px-[5px] font-bold rounded text-white text-[11px]">
+                                        -{{ product.discount }}%</p>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center justify-between h-[40px]">
+                                <a class="flex items-center gap-2.5 bg-primary rounded font-medium text-white px-4 h-full"
+                                   href="{% url 'product:catalog-product' product.slug %}"><img
+                                        src="{% static 'images/white-cart.svg' %}" alt="Иконка корзины"> Купить</a>
+                                <div class="flex items-center gap-[9px] h-full">
+                                    <button style="border-color: #F3F4F5;"
+                                            class="rounded h-full border px-[11px] border-[#F3F4F5]"><img
+                                            class="h-[14px] w-[17px]" src="{% static 'images/heart-icon.svg' %}"
+                                            alt="Иконка для добавления в избранные"></button>
+                                    <button style="border-color: #F3F4F5;"
+                                            class="rounded h-full border px-[11px] border-[#F3F4F5]"><img
+                                            class="h-[18px] w-[14px]" src="{% static 'images/chart-icon.svg' %}"
+                                            alt="Иконка для сравнения продукта"></button>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <div class="flex gap-2.5">
+                    <div class="flex gap-2.5 w-full justify-center">
+                        <div id="pagination-prev-btn"
+                            class="border hover:text-white hover:bg-black py-[20px] px-[24px] rounded border-[#DFDFDF] cursor-pointer">
+                            Назад
+                        </div>
+                        <div id="pages-container" class="flex gap-2.5">
+                            
+                        </div>
+                        <div id="pagination-next-btn"
+                            class="border hover:text-white hover:bg-black py-[20px] px-[24px] rounded border-[#DFDFDF] cursor-pointer">
+                            Вперед
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        let products;
+
+        let order_value;
+        
+        let paginate = 9;
+
+        let page = 1;
+
+        let total_count = {{ total_products|safe }};
+        
+        let total_pages = calculateTotalPages(total_count);
+        
+        const pages_container = document.querySelector('#pages-container');
+
+        const total_count_element = document.querySelector("#total-count");
+
+        const catalog_header = document.querySelector("#catalog-header");
+
+        const filters = document.querySelectorAll('.filter');
+
+        const products_container = $('#products-container');
+
+        const params = new URLSearchParams(window.location.search);
+
+        // Для сортировки
+        const orders = {
+            'price': 'По возрастанию цены',
+            '-price': 'По убыванию цены',
+            '-created_at': 'По новинкам',
+        };
+        const order_text = document.querySelector("#order-text");
+        const order_button = document.querySelector('#order-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+
+        const paginate_btns = document.querySelectorAll('.paginate_by');
+
+        const filters_request_btn = document.querySelector('#filters-request-btn');
+
+        const price_from_input = document.querySelector('#price-from-input');
+        const price_to_input = document.querySelector('#price-to-input');
+
+        const pagination_prev_btn = document.querySelector('#pagination-prev-btn');
+        const pagination_next_btn = document.querySelector('#pagination-next-btn');
+        
+        render_pages();
+        
+        initParams();
+
+        // Применяем фильтры
+        filters_request_btn.addEventListener('click', () => {
+            page = 1;
+            fetchCatalog()
+        });
+
+        // Показать/скрыть меню при клике на кнопку
+        order_button.addEventListener('click', () => {
+            dropdownContent.classList.toggle('hidden');
+        });
+
+        // Закрытие меню при выборе одного из пунктов
+        const items = dropdownContent.querySelectorAll('.order-option');
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                order_value = item.getAttribute('data-order-type');
+                order_text.innerText = orders[order_value];
+                fetchCatalog();
+            });
+        });
+
+        pagination_next_btn.addEventListener('click', () => {
+            if (total_pages <= page) return;
+            page += 1;
+            fetchCatalog()
+        });
+
+        pagination_prev_btn.addEventListener('click', () => {
+            if (page <= 1) return;
+            page -= 1;
+            fetchCatalog()
+        });
+
+        // Обновление страницы с параметрами
+        function fetchCatalog() {
+            const filters_params = new URLSearchParams()
+            const checked_filters = Array.from(filters).filter(checkbox => checkbox.checked);
+
+            checked_filters.forEach(filter => {
+                filters_params.append(filter.getAttribute('data-type'), filter.getAttribute('data-id'));
+            })
+
+            const price_from = price_from_input.value;
+            const price_to = price_to_input.value;
+
+            if (price_from && isPositiveInteger(price_from)) {
+                params.set('price_from', price_from);
+            } else {
+                params.delete('price_from');
+            }
+
+            if (price_to && isPositiveInteger(price_to)) {
+                params.set('price_to', price_to);
+            } else {
+                params.delete('price_to');
+            }
+
+            if (order_value) {
+                params.set('order', order_value);
+            }
+            if (paginate) {
+                params.set('paginate_by', paginate);
+            }
+
+            if (page >= 1) {
+                params.set('page', page);
+            }
+
+            const url = `http://localhost:8000{% url 'product:catalog-list' category.slug %}?${params}&${filters_params}`;
+            console.log(url)
+            $.ajax({
+                'url': url,
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    products_container.empty();
+                    products = data.results;
+                    total_pages = calculateTotalPages(data.count);
+                    total_count_element.innerText = `${data.count} товаров`
+
+                    products.forEach(function (product) {
+                        let discountLabel = product.discount > 0 ? `
+                            <del style="color: #8F9296;" class="mr-2.5">${product.price} ₽</del>
+                            <p style="color: #003B73;"
+                                class="font-semibold text-xl text-[#003B73] mr-[7px]">${product.get_discount_price} ₽
+                            </p>
+                            <p class="bg-[#1B9665] py-[3px] px-[5px] font-bold rounded text-white text-[11px]">
+                                -${product.discount}%
+                            </p>
+                        ` : `<p style="color: #003B73;"
+                                        class="font-semibold text-xl text-[#003B73] mr-[7px]">${product.get_discount_price} ₽
+                                    </p>`;
+
+                        let productHTML = `
+                            <article class="flex h-full w-full flex-col px-[15px] gap-2.5">
+                                <div class="p-3.5">
+                                    <img class="w-[248px] h-[202px]" src="${product.cover_url}" alt="${product.name}" />
+                                </div>
+                                <p style="color: #A8ADB2;" class="text-sm text-[#A8ADB2]">Артикул: ${product.sku}</p>
+                                <p class="font-medium text-lg leading-[26px] py-2.5">${product.name}</p>
+                                <div class="flex items-center">
+                                    
+                                    ${discountLabel}
+                                </div>
+                                <div class="flex items-center justify-between h-[40px]">
+                                    <a class="flex items-center gap-2.5 bg-primary rounded font-medium text-white px-4 h-full"
+                                       href="${domen_url}/catalog/product/${product.slug}/">
+                                        <img src="/static/images/white-cart.svg" alt="Иконка корзины"> Купить
+                                    </a>
+                                    <div class="flex items-center gap-[9px] h-full">
+                                        <button style="border-color: #F3F4F5;" class="rounded h-full border px-[11px] border-[#F3F4F5]">
+                                            <img class="h-[14px] w-[17px]" src="/static/images/heart-icon.svg" alt="Избранное">
+                                        </button>
+                                        <button style="border-color: #F3F4F5;" class="rounded h-full border px-[11px] border-[#F3F4F5]">
+                                            <img class="h-[18px] w-[14px]" src="/static/images/chart-icon.svg" alt="Сравнение">
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                        products_container.append(productHTML);
+                        catalog_header.scrollIntoView({behavior: 'smooth'});
+                    });
+                    render_pages();
+                }
+            });
+        }
+
+        // Если в запросе есть параметры, то инициализируем
+        function initParams() {
+            const order = params.get('order') ? params.get('order') : 'price';
+
+            order_text.innerText = orders[order];
+            order_button.setAttribute('data-order-type', order);
+
+            paginate_btns[0].classList.add('border-none', 'bg-[#F6F8FB]', 'text-[#186FD4]');
+
+            // Проходимся по кнопкам размера пагинации
+            paginate_btns.forEach(item => {
+                // Если размер пагинации с запроса совпадает с числом элемента, то задаем стили - если нет, то добавляем событие на отправку запроса
+                item.addEventListener('click', () => {
+                    paginate_btns.forEach(btn => {
+                        if (btn.innerText === item.innerText) {
+                            btn.classList.add('border-none', 'bg-[#F6F8FB]', 'text-[#186FD4]');
+                        } else {
+                            btn.classList.remove('border-none', 'bg-[#F6F8FB]', 'text-[#186FD4]');
+                        }
+                    });
+                    paginate = item.innerText;
+                    page = 1;
+                    fetchCatalog();
+                });
+            });
+        }
+        
+        // Рендерит кнопки пагинации
+        function render_pages() {
+            pages_container.innerHTML = "";
+            
+            let start_page = 1;
+            
+            let pages_to_render;
+            
+            if (total_pages < 7) {
+                pages_to_render = total_pages + 1;
+            } else {
+                if (page + 2 >= total_pages) {
+                    start_page = total_pages - 5;
+                    pages_to_render = total_pages + 1;
+                } else if (page < 4) {
+                    start_page = 1
+                    pages_to_render = start_page + 5;
+                } else {
+                    start_page = page - 2 ;
+                    pages_to_render = start_page + 4;
+                }
+            }
+            
+            if (page > 3) {
+                const first_page = document.createElement('div');
+                first_page.classList.add("rounded", "py-[20px]", "px-[24px]", "hover:text-white", "hover:bg-black",  "border", "border-[#DFDFDF]", "cursor-pointer");
+                first_page.innerText = 1;
+                first_page.addEventListener('click', () => {
+                    page = 1;
+                    fetchCatalog();
+                })
+                pages_container.appendChild(first_page);
+            }
+            
+            for (let i = start_page; i < pages_to_render; i++) {
+                const page_element = document.createElement('div');
+                page_element.classList.add("rounded", "py-[20px]", "px-[24px]");
+                page_element.innerText = i;
+                if (page === i) {
+                    page_element.classList.add("text-white", "bg-black");
+                    pages_container.appendChild(page_element);
+                    continue;
+                } else {
+                    page_element.classList.add("hover:text-white", "hover:bg-black",  "border", "border-[#DFDFDF]", "cursor-pointer");
+                }
+                page_element.addEventListener('click', function () {
+                   page = i;
+                   fetchCatalog()
+                });
+                pages_container.appendChild(page_element);
+            }
+            if (page + 2 < total_pages && total_pages > 6) {
+                const last_page = document.createElement('div');
+                last_page.classList.add("rounded", "py-[20px]", "px-[24px]", "hover:text-white", "hover:bg-black",  "border", "border-[#DFDFDF]", "cursor-pointer");
+                last_page.innerText = total_pages;
+                last_page.addEventListener('click', () => {
+                  page = total_pages;
+                  fetchCatalog();
+                })
+                pages_container.appendChild(last_page);
+            }
+        }
+
+        function isPositiveInteger(value) {
+            return /^\d+$/.test(value);
+        }
+        
+        function calculateTotalPages(total_count) {
+            let total_pages = Math.trunc(total_count / paginate);
+            if (total_count % paginate > 0) {
+                total_pages++;
+            }
+            return total_pages;
+        }
+    </script>
+{% endblock %}

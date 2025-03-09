@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield; /* Для Firefox */
+    }
+
+    .divider {
+        @apply w-full border border-[#EBEEF0];
+    }
+
+    .close-icon {
+        width: 14px;
+        height: 14px;
+        position: relative;
+        cursor: pointer; /* Указатель на иконку */
+    }
+
+    .line {
+        position: absolute;
+        background-color: white;
+        height: 2px;
+        width: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    /* Начальная позиция палочек */
+    .line-1 {
+        top: 0;
+    }
+
+    .line-2 {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Класс для крестика (при переключении) */
+    .cross .line-1 {
+        transform: rotate(45deg) translate(3px, 2px);
+    }
+
+    .cross .line-2 {
+        transform: rotate(-45deg) translate(3px, -2px);
+    }
+
+    .filter-title {
+        @apply text-[#414446] font-medium text-lg;
+    }
+
+    .filter-checkbox:checked::before {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        width: 6px;
+        height: 12px;
+        border: solid white; /* Белая галочка */
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .filter-checkbox:checked{
+        background-color: #186FD4;
+    }
+
+    .attribute:nth-child(n+5) {
+        display: none !important;
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 20px;
+        color: #2C333D;
+    }
+}

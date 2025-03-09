@@ -1,0 +1,181 @@
+{% load static %}
+
+<header id="header">
+    <div id="blue-bg" style="background-color: rgba(1, 17, 32, 0.9);"
+         class="absolute w-full h-full z-10 invisible md:hidden"></div>
+    <div class="container py-[9px] flex justify-between items-center">
+        <div>
+            <button id="burger-btn" class="flex xl:hidden items-center gap-3 font-semibold" role="button">
+                <img src="{% static 'images/burger-menu-icon.svg' %}" alt="Иконка для меню">
+                <span class="hidden md:block">Меню</span>
+            </button>
+            <div class="absolute xl:static top-0 left-0 z-20 h-full w-full md:w-auto -translate-x-full xl:translate-x-0 transition-transform duration-500 ease-in"
+                 id="burger-menu">
+                <div class="h-full w-[331px] md:w-[371px] xl:w-fit bg-white flex flex-col xl:flex-row uppercase font-medium divide-y xl:divide-y-0 *:text-sm text-[#2E3032] 2xl:gap-[30px] xl:gap-[20px] xl:text-[#6C6F71] hover:*:*:underline *:py-[18px] xl:*:py-0 xl:*:px-0 *:px-[25px] border xl:border-none xl:items-center">
+                    <div class="flex xl:hidden items-center justify-between">
+                        <p class="font-bold text-lg capitalize">Меню</p>
+                        <img id="burger-close-btn" class="cursor-pointer p-[9.5px] bg-[#F2F6FC] rounded"
+                             src="{% static 'images/close-icon.svg' %}" alt="Иконка для закрытия меню">
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            О компании
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Оплата
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Доставка
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Возврат
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Отзывы
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Вопрос-ответ
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Новости
+                        </a>
+                    </div>
+                    <div>
+                        <a class="" href="{% url 'main:home' %}">
+                            Контакты
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <p class="text-[#4E5760] text-xs hidden md:block">Ежедневно, с 8:00 до 18:00</p>
+            <p class="font-semibold">8 800 444 00 65</p>
+            <button class="text-xs px-3 bg-[#F2F6FC] h-[32px] rounded text-[#2A5E8D] uppercase font-bold">Заказать
+                звонок
+            </button>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <nav class="container flex items-center justify-between flex-wrap bg-white my-[32px] *:h-[52px] gap-y-5">
+        <a href="{% url 'main:home' %}"><img class="w-[159px] h-full" src="{% static 'images/logo.svg' %}"
+                                             alt="Логотип сайта stroioptorg"></a>
+        <div class="flex justify-between items-center gap-[23px] md:gap-[27px] *:hover:*:text-black">
+            <a href="#" class="md:flex flex-col items-center  hidden"><img src="{% static 'images/gift-icon.svg' %}"
+                                                                           alt="Иконка для акции"/>
+                <p class="text-[#6B7076] hidden md:block">Все акции</p></a>
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'users:logout' %}">
+                    {% csrf_token %}
+                    <button class="flex flex-col items-center hover:*:text-black">
+                        <img class="w-[19px]"
+                             src="{% static 'images/profile-icon.svg' %}"
+                             alt="Иконка для входа"/>
+                        <p class="text-[#6B7076] hidden md:block">Выйти</p>
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="flex flex-col items-center">
+                    <img class="w-[19px]"
+                         src="{% static 'images/profile-icon.svg' %}"
+                         alt="Иконка для входа"/>
+                    <p class="text-[#6B7076] hidden md:block">Войти</p>
+                </a>
+            {% endif %}
+            <a href="#" class="flex flex-col items-center"><img class="w-[13px]"
+                                                                src="{% static 'images/chart-icon.svg' %}"
+                                                                alt="Иконка для сравнения"/>
+                <p class="text-[#6B7076] hidden md:block">Сравнение</p></a>
+            <a href="#" class="flex flex-col items-center"><img class="w-[17px]"
+                                                                src="{% static 'images/heart-icon.svg' %}"
+                                                                alt="Иконка для избранных"/>
+                <p class="text-[#6B7076] hidden md:block">Избранное</p></a>
+            <a href="{% url 'product:cart' %}" class="flex flex-col items-center"><img class="w-[21px]"
+                                                                src="{% static 'images/cart-icon.svg' %}"
+                                                                alt="Иконка для корзины"/>
+                <p class="text-[#6B7076] hidden md:block">Корзина</p></a>
+        </div>
+        <div class="flex justify-between gap-[10px] md:gap-5 w-full">
+            <button id="catalog-btn"
+                    class="flex items-center rounded-lg text-[13px] gap-[17px] pl-[29px] pr-[40px] uppercase bg-primary font-medium text-white"
+                    role="button">
+                <!-- <img src="{% static 'images/dropdown-icon.svg' %}" alt="Иконка для каталога"> -->
+                <div class="close-icon">
+                    <div class="line line-1"></div>
+                    <div class="line line-2"></div>
+                </div>
+
+
+                Каталог
+            </button>
+            <form class="flex rounded-lg w-full 2xl:w-[722px] bg-primary">
+                <input id="search-input" role="searchbox"
+                       class="w-full h-full border-[3px] focus:outline-0 pl-4 border-primary rounded-lg" type="text"
+                       placeholder="Найти среди 50000 товаров. Например: Дрель Bosch">
+                <button class="px-[21px]"><img src="{% static 'images/search-icon.svg' %}"
+                                               alt="Иконка для кнопки поиска"/></button>
+            </form>
+        </div>
+    </nav>
+    <div class="divider"></div>
+    <div class="md:relative">
+        <div id="catalog"
+             class=" md:bg-[#F9FAFB] absolute top-0 left-0 z-20 -translate-x-full transition-transform duration-500 ease-in md:translate-x-0 h-full md:h-fit w-full md:invisible">
+            <div id="catalog-content"
+                 class="w-[331px] md:container h-full md:h-fit md:grid grid-cols-4 gap-5 py-6 bg-white md:bg-transparent md:w-full">
+                <div id="catalog-category-wrapper" class="flex flex-col rounded-lg bg-white gap-2.5 h-fit">
+                    <div class="flex md:hidden items-center justify-between px-[15px]">
+                        <p class="text-xl font-bold">Категории каталога</p>
+                        <img class=" catalog-close-btn p-[9.5px] bg-[#F2F6FC] rounded"
+                             src="{% static 'images/close-icon.svg' %}" alt="Иконка для закрытия меню">
+                    </div>
+                    <div id="catalog-category" class="divide-y">
+
+                    </div>
+                </div>
+                <div id="catalog-subcategory-wrapper"
+                     class="hidden md:block px-[15px] rounded-lg gap-2.5 bg-white h-fit">
+                    <div class="flex md:hidden items-center justify-between">
+                        <div class="flex gap-[7px] items-center">
+                            <img class="w-[13px]" id="subcategory-back-btn" src="{% static 'images/back-arrow.svg' %}"
+                                 alt="Иконка стрелки что бы вернутся в категории">
+                            <p id="subcategory-title" class="text-xl font-bold"></p>
+                        </div>
+
+                        <img class="catalog-close-btn cursor-pointer p-[9.5px] bg-[#F2F6FC] rounded"
+                             src="{% static 'images/close-icon.svg' %}" alt="Иконка для закрытия меню">
+                    </div>
+                    <div id="catalog-subcategory">
+
+                    </div>
+                </div>
+                <div id="catalog-products-types-wrapper" class="hidden px-[15px] md:px-0 gap-2.5 md:block col-span-2">
+                    <div class="flex md:hidden items-center justify-between">
+                        <div class="flex gap-[7px] items-center">
+                            <img id="products-types-back-btn" src="{% static 'images/back-arrow.svg' %}"
+                                 alt="Иконка стрелки что бы вернутся в категории">
+                            <p id="products-types-title" class="text-xl font-bold"></p>
+                        </div>
+                        <img class="catalog-close-btn cursor-pointer p-[9.5px] bg-[#F2F6FC] rounded"
+                             src="{% static 'images/close-icon.svg' %}" alt="Иконка для закрытия меню">
+                    </div>
+                    <ul id="catalog-products-types" class="md:grid grid-cols-2 gap-3 hover:*:underline">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

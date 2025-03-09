@@ -1,0 +1,111 @@
+{% extends 'common/base.html' %}
+
+{% block content %}
+    <ul>
+        {% for cart in cart_products %}
+            <li id="cart-product-{{ cart.id }}">
+                <div>
+                    <div class="flex gap-5">
+                        {% csrf_token %}
+                        <p>{{ cart.product }}</p>
+                        <p>Количество:</p>
+                        <button id="product-decrement-btn">-</button>
+                        <p id="product-quantity">{{ cart.quantity }}</p>
+                        <button id="product-increment-btn">+</button>
+                        <button data-cart-id="{{ cart.id }}" id="delete-cart-btn">Удалить</button>
+                    </div>
+                    <button data-cart-id="{{ cart.id }}" id="update-cart-btn">Обновить корзину</button>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block script %}
+    <script>
+        let counter = document.getElementById('product-quantity').innerHTML;
+        counter = parseInt(counter);
+        
+        const product_quantity = document.getElementById('product-quantity');
+        
+        const decrement_btn = document.getElementById('product-decrement-btn');
+        const increment_btn = document.getElementById('product-increment-btn');
+        
+        increment_btn.addEventListener('click', function () {
+            counter += 1;
+            product_quantity.innerHTML = counter;
+        })
+
+        decrement_btn.addEventListener('click', function () {
+            counter -= 1;
+            product_quantity.innerHTML = counter;
+        })
+
+        document.getElementById('update-cart-btn').addEventListener('click', (e) => {
+            const product_id = e.target.dataset.cartId;
+            const quantity = product_quantity.innerHTML;
+            UpdateProductCart(product_id, quantity);
+        });
+        
+        document.getElementById('delete-cart-btn').addEventListener('click', (e) => {
+            const product_id = e.target.dataset.cartId;
+            DeleteProductCart(product_id);
+        })
+
+        async function UpdateProductCart(cart_product_id, quantity) {
+            try {
+                const response = await fetch('http://localhost:8000/catalog/cart/update/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(), // Add the CSRF token in headers
+                    },
+                    body: JSON.stringify({ // Use 'body' instead of 'data'
+                        cart_product_id: cart_product_id,
+                        quantity: quantity,
+                    }),
+                });
+                const result = await response.json();
+                console.log(result);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        
+        async function DeleteProductCart(cart_product_id) {
+            try {
+                const response = await fetch('http://localhost:8000/catalog/cart/update/', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(), // Add the CSRF token in headers
+                    },
+                    body: JSON.stringify({ // Use 'body' instead of 'data'
+                        cart_product_id: cart_product_id
+                    }),
+                });
+                
+                const result = await response.json();
+                console.log(result)
+                if (response.status === 200) {
+                    document.getElementById('cart-product-' + cart_product_id).remove();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        function getCsrfToken() {
+            // Method 1: Using cookie
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+
+            // Method 2: From meta tag (recommended)
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+            return csrfToken;
+        }
+    </script>
+{% endblock %}

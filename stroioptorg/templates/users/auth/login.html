@@ -1,0 +1,12 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+    <a href="{% url 'users:register' %}">Регистрация</a>
+    <a href="{% url 'users:password_reset' %}">Забыл пароль</a>
+{% endblock %}
