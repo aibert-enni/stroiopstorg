@@ -28,7 +28,6 @@ class CartProduct(TimeStampedModel):
     def subtotal(self):
         return self.quantity * self.product.price
 
-
     class Meta:
         unique_together = ['cart', 'product']
         verbose_name = 'Товар корзины'

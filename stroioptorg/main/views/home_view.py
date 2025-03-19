@@ -1,4 +1,4 @@
-from django.views.generic import View, TemplateView
+from django.views.generic import TemplateView
 
 
 # Create your views here.

@@ -1,15 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from product.models import CartProduct, Product, Cart
-from product.serializers import AddToCartSerializer, CartSerializer, UpdateCartProductSerializer, CartProductSerializer, \
-    RemoveCartProductSerializer
+from product.models import CartProduct
+from product.serializers import CartSerializer,  CartProductSerializer
+from product.services import CartProductService
 
 
 class CartView(LoginRequiredMixin, ListView):
@@ -24,130 +22,66 @@ class CartView(LoginRequiredMixin, ListView):
 class CartProductView(APIView):
     permission_classes = (IsAuthenticated,)
 
+    class AddToCartSerializer(serializers.Serializer):
+        product_id = serializers.IntegerField(required=True)
+        quantity = serializers.IntegerField(required=True, min_value=1)
+
+    class UpdateCartProductSerializer(serializers.Serializer):
+        cart_product_id = serializers.IntegerField(required=True)
+        quantity = serializers.IntegerField(required=True, min_value=1)
+
+    class RemoveCartProductSerializer(serializers.Serializer):
+        cart_product_id = serializers.IntegerField(required=True)
+
     def post(self, request):
-        serializer = AddToCartSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({
-                'status': 'error',
-                'message': serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
-        product_id = serializer.validated_data['product_id']
-        quantity = serializer.validated_data['quantity']
-        try:
-            with transaction.atomic():
-                # Get or 404 for product
-                product = get_object_or_404(Product, id=product_id)
+        query_serializer = self.AddToCartSerializer(data=request.data)
 
-                # Check stock
-                if product.stock_quantity < quantity:
-                    return Response({
-                        'status': 'error',
-                        'message': 'Insufficient stock quantity'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+        query_serializer.is_valid(raise_exception=True)
 
-                # Get or create cart
-                cart, _ = Cart.objects.get_or_create(user=request.user)
+        product_id = query_serializer.validated_data['product_id']
+        quantity = query_serializer.validated_data['quantity']
 
-                # Get or create cart product
-                cart_product, created = CartProduct.objects.get_or_create(
-                    cart=cart,
-                    product=product,
-                    defaults={
-                        'quantity': quantity
-                    }
-                )
+        # Serialize cart for response
+        cart = CartProductService(request.user).create(product_id, quantity)
 
-                if not created:
-                    cart_product.quantity += quantity
-                    cart_product.save()
+        cart_serializer = CartSerializer(cart)
 
-                # Update product stock
-                product.stock_quantity -= quantity
-                product.save()
+        return Response({
+            'status': 'success',
+            'message': 'Product added to cart successfully',
+            'cart': cart_serializer.data
+        }, status=status.HTTP_200_OK)
 
-                # Serialize cart for response
-                cart_serializer = CartSerializer(cart)
-
-                return Response({
-                    'status': 'success',
-                    'message': 'Product added to cart successfully',
-                    'cart': cart_serializer.data
-                }, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request):
-        try:
-            serializer = UpdateCartProductSerializer(data=request.data)
+        query_serializer = self.UpdateCartProductSerializer(data=request.data)
 
-            if not serializer.is_valid():
-                return Response({
-                    'status': 'error',
-                    'message': serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
+        query_serializer.is_valid(raise_exception=True)
 
-            cart_product_id = serializer.validated_data['cart_product_id']
-            quantity = serializer.validated_data['quantity']
+        cart_product_id = query_serializer.validated_data['cart_product_id']
+        quantity = query_serializer.validated_data['quantity']
 
-            cart_product = get_object_or_404(CartProduct, id=cart_product_id, cart__user=self.request.user)
+        cart_product = CartProductService(request.user).update(cart_product_id, quantity)
 
-            # get difference between request quantity and quantity from database
-            quantity_diff = quantity - cart_product.quantity
+        cart_product_serializer = CartProductSerializer(cart_product)
 
-            # if quantity in stock less than quantity diff return error
-            if cart_product.product.stock_quantity < abs(quantity_diff):
-                return Response({
-                    'status': 'error',
-                    'message': 'Insufficient stock quantity'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            with transaction.atomic():
-                cart_product.quantity = quantity
-                cart_product.save()
-
-                cart_product.product.stock_quantity -= quantity_diff
-                cart_product.product.save()
-
-            cart_product_serializer = CartProductSerializer(cart_product)
-
-            return Response({
-                'status': 'success',
-                'message': 'Cart Product updated successfully',
-                'cart': cart_product_serializer.data
-            }, status=status.HTTP_200_OK)
-
-
-        except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'status': 'success',
+            'message': 'Cart Product updated successfully',
+            'cart': cart_product_serializer.data
+        }, status=status.HTTP_200_OK)
 
     def delete(self, request):
-        serializer = RemoveCartProductSerializer(data=request.data)
+        query_serializer = self.RemoveCartProductSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response({
-                'status': 'error',
-                'message': serializer.errors
-            })
+        query_serializer.is_valid(raise_exception=True)
 
-        cart_product_id = serializer.validated_data['cart_product_id']
+        cart_product_id = query_serializer.validated_data['cart_product_id']
 
-        try:
-            with transaction.atomic():
-                cart_product = get_object_or_404(CartProduct, id=cart_product_id)
-                cart_product.delete()
-                return Response({
-                    'status': 'success',
-                    'message': 'Cart Product deleted successfully',
-                }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_404_NOT_FOUND)
+        CartProductService(request.user).delete(cart_product_id)
+
+        return Response({
+            'status': 'success',
+            'message': 'Cart Product deleted successfully',
+        }, status=status.HTTP_200_OK)
+
