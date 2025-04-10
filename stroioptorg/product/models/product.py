@@ -3,7 +3,7 @@ import uuid
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from core.models import TimeStampedModel
+from main.models import TimeStampedModel
 
 
 class ProductImage(models.Model):
@@ -36,10 +36,10 @@ class Product(TimeStampedModel):
             return int(self.price - (self.price * (self.discount * 0.01)))
         return self.price
 
-    def save(self, *args, **kwargs):
+    def save(self, **kwargs):
         if not self.sku:
             self.sku = uuid.uuid4().hex[:8].upper()
-        super().save(*args, **kwargs)
+        super().save(**kwargs)
 
     def __str__(self):
         return self.name

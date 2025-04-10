@@ -61,7 +61,7 @@ class ProductsByCategoryView(ListView):
         return context_data
 
 
-class ProductByCategoryListView(ListAPIView):
+class ProductByCategoryListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductListPagination
 

@@ -1,40 +1,36 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
-from rest_framework import status, serializers
-from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from product.models import CartProduct
-from product.serializers import CartSerializer,  CartProductSerializer
+from product.serializers import CartSerializer, CartProductSerializer, UpdateCartProductSerializer, \
+ AddToCartSerializer
 from product.services import CartProductService
 
 
-class CartView(LoginRequiredMixin, ListView):
+class CartView(ListView):
     template_name = 'product/cart.html'
     context_object_name = 'cart_products'
 
     def get_queryset(self):
-        cart_products = CartProduct.objects.filter(cart__user=self.request.user)
-        return cart_products
+        return CartProductService.get_cart_products(self.request)
 
+class CartAPIView(ListAPIView):
+    serializer_class = CartProductSerializer
 
-class CartProductView(APIView):
-    permission_classes = (IsAuthenticated,)
+    def get_queryset(self):
+        return CartProductService.get_cart_products(self.request)
 
-    class AddToCartSerializer(serializers.Serializer):
-        product_id = serializers.IntegerField(required=True)
-        quantity = serializers.IntegerField(required=True, min_value=1)
+class CartAddProductAPIView(GenericAPIView):
+    serializer_class = AddToCartSerializer
 
-    class UpdateCartProductSerializer(serializers.Serializer):
-        cart_product_id = serializers.IntegerField(required=True)
-        quantity = serializers.IntegerField(required=True, min_value=1)
-
-    class RemoveCartProductSerializer(serializers.Serializer):
-        cart_product_id = serializers.IntegerField(required=True)
-
+    @extend_schema(
+        request=AddToCartSerializer,
+        description='Для добавления продукта в корзину'
+    )
     def post(self, request):
-        query_serializer = self.AddToCartSerializer(data=request.data)
+        query_serializer = self.serializer_class(data=request.data)
 
         query_serializer.is_valid(raise_exception=True)
 
@@ -42,46 +38,50 @@ class CartProductView(APIView):
         quantity = query_serializer.validated_data['quantity']
 
         # Serialize cart for response
-        cart = CartProductService(request.user).create(product_id, quantity)
+        cart = CartProductService(request).create(product_id, quantity)
 
         cart_serializer = CartSerializer(cart)
 
         return Response({
             'status': 'success',
-            'message': 'Product added to cart successfully',
+            'message': 'Продукт был добавлен в корзину удачно',
             'cart': cart_serializer.data
         }, status=status.HTTP_200_OK)
 
+class CartUpdateProductAPIView(GenericAPIView):
+    serializer_class = UpdateCartProductSerializer
 
+    @extend_schema(
+        request=UpdateCartProductSerializer,
+        description='Для обновления количества продуктов в корзине'
+    )
     def put(self, request):
-        query_serializer = self.UpdateCartProductSerializer(data=request.data)
+        query_serializer = self.serializer_class(data=request.data)
 
         query_serializer.is_valid(raise_exception=True)
 
         cart_product_id = query_serializer.validated_data['cart_product_id']
         quantity = query_serializer.validated_data['quantity']
 
-        cart_product = CartProductService(request.user).update(cart_product_id, quantity)
+        cart_product = CartProductService(request).update(cart_product_id, quantity)
 
         cart_product_serializer = CartProductSerializer(cart_product)
 
         return Response({
             'status': 'success',
-            'message': 'Cart Product updated successfully',
+            'message': 'Продукт в корзине удачно был обновлен',
             'cart': cart_product_serializer.data
         }, status=status.HTTP_200_OK)
 
-    def delete(self, request):
-        query_serializer = self.RemoveCartProductSerializer(data=request.data)
+class CartRemoveProductAPIView(GenericAPIView):
 
-        query_serializer.is_valid(raise_exception=True)
+    def delete(self, request, pk):
+        cart_product_id = pk
 
-        cart_product_id = query_serializer.validated_data['cart_product_id']
-
-        CartProductService(request.user).delete(cart_product_id)
+        CartProductService(request).delete(cart_product_id)
 
         return Response({
             'status': 'success',
-            'message': 'Cart Product deleted successfully',
-        }, status=status.HTTP_200_OK)
+            'message': 'Продукт был удачно удален с корзины',
+        }, status=status.HTTP_204_NO_CONTENT)
 

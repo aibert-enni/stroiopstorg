@@ -1,12 +1,15 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
-from core.models import TimeStampedModel
+from main.models import TimeStampedModel
+from product.managers import CartProductManager
 from users.models import User
 
 
 class Cart(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart', verbose_name='Пользователь')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart', null=True, verbose_name='Пользователь')
+    session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)
 
     @property
     def total_amount(self):
@@ -24,6 +27,13 @@ class CartProduct(TimeStampedModel):
     product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name='cart_products', verbose_name='Товар')
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name='Количество')
 
+    objects = CartProductManager()
+    
+    def save(self, **kwargs):
+        self.cart.updated_at = timezone.now()
+        self.cart.save()
+        super().save(**kwargs)
+    
     @property
     def subtotal(self):
         return self.quantity * self.product.price

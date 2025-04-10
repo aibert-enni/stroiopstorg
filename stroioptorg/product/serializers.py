@@ -2,6 +2,20 @@ from rest_framework import serializers
 
 from product.models import CartProduct, Cart, Product
 
+# Cart serializers
+
+class UpdateCartProductSerializer(serializers.Serializer):
+    cart_product_id = serializers.IntegerField(required=True)
+    quantity = serializers.IntegerField(required=True, min_value=1)
+
+class AddToCartSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField(required=True)
+    quantity = serializers.IntegerField(required=True, min_value=1)
+
+class RemoveCartProductSerializer(serializers.Serializer):
+    cart_product_id = serializers.IntegerField(required=True)
+
+# Product serializers
 
 class ProductSerializer(serializers.ModelSerializer):
     get_discount_price = serializers.SerializerMethodField()

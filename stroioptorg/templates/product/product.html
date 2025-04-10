@@ -354,7 +354,7 @@
 
         async function fetchCart(product_id, quantity) {
             try {
-                const response = await fetch('http://localhost:8000/catalog/cart/create/', {
+                const response = await fetch('http://localhost:8000/cart/add/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

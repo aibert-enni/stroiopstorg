@@ -54,7 +54,7 @@
 
         async function UpdateProductCart(cart_product_id, quantity) {
             try {
-                const response = await fetch('http://localhost:8000/catalog/cart/update/', {
+                const response = await fetch('http://localhost:8000/cart/update/', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -74,7 +74,7 @@
         
         async function DeleteProductCart(cart_product_id) {
             try {
-                const response = await fetch('http://localhost:8000/catalog/cart/update/', {
+                const response = await fetch('http://localhost:8000/cart/update/', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
