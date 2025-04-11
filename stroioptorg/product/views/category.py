@@ -2,12 +2,13 @@ from django.core.validators import MinValueValidator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 
 from product.models import Category, Product
 from product.pagination import ProductListPagination
-from product.serializers import ProductSerializer
+from product.serializers import ProductSerializer, ProductListQuerySerializer
 from product.services import ProductByCategoryListService
 from product.utils import get_nested_categories, get_filter
 
@@ -65,16 +66,10 @@ class ProductByCategoryListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductListPagination
 
-    class ProductListQuerySerializer(serializers.Serializer):
-        order_types = {'price', '-price', '-created_at'}
-
-        order = serializers.ChoiceField(choices=order_types, default='price')
-
-        price_from = serializers.IntegerField(validators=[MinValueValidator(1)], required=False)
-        price_to = serializers.IntegerField(validators=[MinValueValidator(1)], required=False)
-
+    @extend_schema(
+    )
     def get_queryset(self):
-        query_serializer = self.ProductListQuerySerializer(data=self.request.query_params)
+        query_serializer = ProductListQuerySerializer(data=self.request.query_params)
 
         query_serializer.is_valid(raise_exception=True)
 

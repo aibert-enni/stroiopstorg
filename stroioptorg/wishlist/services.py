@@ -16,7 +16,7 @@ class WishlistService:
             wishlist = WishlistProduct.objects.filter(user=self.request.user).select_related('product')
             products = [item.product for item in wishlist]
         else:
-            wishlist = self.request.session.get('wishlist')
+            wishlist = self.request.session.get('wishlist', [])
             products = Product.objects.filter(id__in=wishlist)
 
         return products

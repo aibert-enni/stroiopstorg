@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
 from product.models import CartProduct, Cart, Product
@@ -35,6 +36,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.Serializer):
     products = ProductSerializer(many=True)
+
+
+class ProductListQuerySerializer(serializers.Serializer):
+    order_types = {'price', '-price', '-created_at'}
+
+    order = serializers.ChoiceField(choices=order_types, default='price')
+
+    price_from = serializers.IntegerField(validators=[MinValueValidator(1)], required=False)
+    price_to = serializers.IntegerField(validators=[MinValueValidator(1)], required=False)
 
 
 class CartProductSerializer(serializers.ModelSerializer):

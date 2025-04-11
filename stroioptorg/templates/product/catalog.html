@@ -267,7 +267,7 @@
                 params.set('page', page);
             }
 
-            const url = `http://localhost:8000{% url 'product:catalog-list' category.slug %}?${params}&${filters_params}`;
+            const url = `http://localhost:8000{% url 'api-product:catalog-list' category.slug %}?${params}&${filters_params}`;
             console.log(url)
             $.ajax({
                 'url': url,
