@@ -13,11 +13,13 @@ urlpatterns = [
     # api v1
     path('api/v1/', include('product.api_urls', namespace='api-product')),
     path('api/v1/', include('order.api_urls', namespace='api-order')),
+    path('api/v1/', include('wishlist.api_urls', namespace='api-wishlist')),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
         path('__debug__/', include('debug_toolbar.urls')),
+        path('silk/', include('silk.urls', namespace='silk')),
         path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
         path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     ]
