@@ -1,6 +1,12 @@
 from django.views.generic import DetailView
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
 
 from product.models import Product, ProductAttribute
+from product.pagination import ProductListPagination
+from product.serializers import ProductSerializer, CategorySerializer, SearchQuerySerializer
+from product.services import ProductService
 
 
 class ProductDetailView(DetailView):
@@ -25,3 +31,24 @@ class ProductDetailView(DetailView):
                 product_attributes__attribute_value=type_attribute)
             context['similar_products'] = similar_products
         return context
+
+@extend_schema(
+    parameters=[
+        SearchQuerySerializer
+    ]
+)
+class ProductSearchListAPIView(ListAPIView):
+    serializer_class = ProductSerializer
+    pagination_class = ProductListPagination
+
+    def get_queryset(self):
+        query_serializer = SearchQuerySerializer(data=self.request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        return ProductService.search(search_input=query_serializer.data['search'],**query_serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        categories = ProductService.get_categories_from_products(self.get_queryset())
+        response.data['categories'] = CategorySerializer(categories, many=True).data
+        return response

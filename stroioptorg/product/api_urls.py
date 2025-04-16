@@ -2,6 +2,7 @@ from django.urls import path
 
 from product.views import CartAPIView, CartAddProductAPIView, CartUpdateProductAPIView, CartRemoveProductAPIView, \
     ProductByCategoryListAPIView
+from product.views.product import ProductSearchListAPIView
 
 app_name = 'api-product'
 
@@ -14,4 +15,7 @@ urlpatterns = [
 
     # catalog api
     path('catalog/<slug:category_slug>/', ProductByCategoryListAPIView.as_view(), name='catalog-list'),
+
+    # product api
+    path('search/', ProductSearchListAPIView.as_view(), name='search'),
 ]
