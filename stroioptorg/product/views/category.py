@@ -1,9 +1,7 @@
-from django.core.validators import MinValueValidator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import serializers
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView
 
 from product.models import Category, Product
@@ -61,13 +59,14 @@ class ProductsByCategoryView(ListView):
 
         return context_data
 
-
+@extend_schema(
+    parameters=[ProductListQuerySerializer],
+    description='Получаем каталог товаров по slug с фильтрами, еще можно делать фильтр с помощью атрибутов товара'
+)
 class ProductByCategoryListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     pagination_class = ProductListPagination
 
-    @extend_schema(
-    )
     def get_queryset(self):
         query_serializer = ProductListQuerySerializer(data=self.request.query_params)
 

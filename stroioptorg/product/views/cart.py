@@ -1,8 +1,9 @@
 from django.views.generic import ListView
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import GenericAPIView, ListAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from product.serializers import CartSerializer, CartProductSerializer, UpdateCartProductSerializer, \
  AddToCartSerializer
@@ -22,15 +23,13 @@ class CartAPIView(ListAPIView):
     def get_queryset(self):
         return CartProductService.get_cart_products(self.request)
 
-class CartAddProductAPIView(GenericAPIView):
-    serializer_class = AddToCartSerializer
-
+class CartAddProductAPIView(APIView):
     @extend_schema(
         request=AddToCartSerializer,
         description='Для добавления продукта в корзину'
     )
     def post(self, request):
-        query_serializer = self.serializer_class(data=request.data)
+        query_serializer = AddToCartSerializer(data=request.data)
 
         query_serializer.is_valid(raise_exception=True)
 
@@ -48,15 +47,14 @@ class CartAddProductAPIView(GenericAPIView):
             'cart': cart_serializer.data
         }, status=status.HTTP_200_OK)
 
-class CartUpdateProductAPIView(GenericAPIView):
-    serializer_class = UpdateCartProductSerializer
+class CartUpdateProductAPIView(APIView):
 
     @extend_schema(
         request=UpdateCartProductSerializer,
         description='Для обновления количества продуктов в корзине'
     )
     def put(self, request):
-        query_serializer = self.serializer_class(data=request.data)
+        query_serializer = UpdateCartProductSerializer(data=request.data)
 
         query_serializer.is_valid(raise_exception=True)
 
@@ -73,7 +71,7 @@ class CartUpdateProductAPIView(GenericAPIView):
             'cart': cart_product_serializer.data
         }, status=status.HTTP_200_OK)
 
-class CartRemoveProductAPIView(GenericAPIView):
+class CartRemoveProductAPIView(APIView):
 
     def delete(self, request, pk):
         cart_product_id = pk
