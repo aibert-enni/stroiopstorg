@@ -76,3 +76,11 @@ class ReviewDeleteAPIView(APIView):
         pk = self.kwargs.get('pk')
         ReviewService.delete_review(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ReviewListByProductAPIView(ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+        reviews = ReviewService.get_product_reviews(pk)
+        return reviews

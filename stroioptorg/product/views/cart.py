@@ -15,6 +15,8 @@ class CartView(ListView):
     context_object_name = 'cart_products'
 
     def get_queryset(self):
+        if not self.request.session.session_key:
+            self.request.session.create()
         return CartProductService.get_cart_products(self.request)
 
 class CartAPIView(ListAPIView):

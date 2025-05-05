@@ -1,7 +1,7 @@
 from django.urls import path
 
 from review.views import ReviewCreateAPIView, ReviewUpdateAPIView, ReviewGetAPIView, ReviewListByMeAPIView, \
-    ReviewListByUserIdAPIView, ReviewDeleteAPIView
+    ReviewListByUserIdAPIView, ReviewDeleteAPIView, ReviewListByProductAPIView
 
 app_name = 'api-review'
 
@@ -14,4 +14,5 @@ urlpatterns = [
     # reviews
     path('reviews/me/', ReviewListByMeAPIView.as_view(), name='review-list-me'),
     path('reviews/user/<int:pk>/', ReviewListByUserIdAPIView.as_view(), name='review-list-user'),
+    path('reviews/product/<int:pk>/', ReviewListByProductAPIView.as_view(), name='review-list-by-product'),
 ]

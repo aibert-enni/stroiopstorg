@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.db.models import QuerySet
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
@@ -53,3 +54,8 @@ class ReviewService:
         review = get_object_or_404(Review, pk=review_id)
         review.delete()
         return review
+
+    @staticmethod
+    def get_product_reviews(product_id: int) -> QuerySet[Review]:
+        reviews = Review.objects.filter(product=product_id)
+        return reviews

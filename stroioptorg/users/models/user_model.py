@@ -33,7 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, verbose_name='Почта')
     firstname = models.CharField(max_length=100, validators=[firstname_validator], verbose_name='Имя')
     lastname = models.CharField(max_length=100, validators=[lastname_validator], verbose_name='Фамилия')
-    phone_number = models.CharField(max_length=15, unique=True, validators=[phone_number_validator], verbose_name='Номер телефона')
+    phone_number = models.CharField(max_length=15, unique=True, validators=[phone_number_validator], verbose_name='Номер телефона', null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
