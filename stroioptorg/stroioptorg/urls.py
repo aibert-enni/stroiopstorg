@@ -1,27 +1,28 @@
-from allauth.account.views import ConfirmEmailView
 from dj_rest_auth.views import PasswordResetConfirmView
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include, re_path
 
 from users.views.auth_view import GoogleLogin, GoogleLoginCallback
+from users.views.email import CustomConfirmEmailAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls', namespace='main')),
+    path('', include('apps.main.urls', namespace='main')),
     path('', include('users.urls', namespace='users')),
     path('', include('product.urls', namespace='product')),
+    path('', include('order.urls', namespace='order')),
 
     # auth
     path('api/v1/auth/', include('dj_rest_auth.urls')),
-    path('password/reset/confirm/<str:uidb64>/<str:token>', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     re_path(
         r'^api/v1/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',
-        ConfirmEmailView.as_view(),
+        CustomConfirmEmailAPIView.as_view(),
         name='account_confirm_email'
     ),
     path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')),
 
+    # google auth
     path('api/v1/auth/google/', GoogleLogin.as_view(), name='google_login'),
     path(
         "api/v1/auth/google/callback/",

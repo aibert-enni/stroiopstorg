@@ -2,11 +2,113 @@
 {% load static %}
 
 {% block content %}
-    <div class="container mx-auto px-4 py-12">
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Sign Up</button>
-        </form>
+    <h1 class="h1 mb-24">Регистрация</h1>
+    <div class="flex justify-between items-start xl:max-w-[1368px] mb-24  rounded-lg border p-10">
+        <div class="w-full mr-10 flex-1" x-data="registrationForm()">
+            <form class="flex flex-col *:rounded-lg  max-w-md" @submit.prevent="submit">
+                <label for="email" class="pb-2.5">Email:</label>
+                <input type="text" x-model="email" autocomplete="email" placeholder="Введите почту"
+                       class="block h-[61px] mb-2 w-full border px-3 py-2" required>
+                <label for="phone_number" class="pb-2.5">Номер телефона:</label>
+                <input id="phone_number" type="tel" autocomplete="phone_number" x-model="phone_number"
+                       placeholder="+7 (___) ___-__-__"
+                       class="block h-[61px] mb-2 w-full border px-3 py-2" required>
+                <div class="flex justify-between">
+                    <div>
+                        <label for="firstname" class="pb-2.5">Имя:</label>
+                        <input type="text" x-model="firstname" autocomplete="firstname" placeholder="Введите имя"
+                               class="block h-[61px] mb-2 w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label for="lastname" class="pb-2.5">Фамилия:</label>
+                        <input type="text" x-model="lastname" autocomplete="lastname" placeholder="Введите фамилие"
+                               class="block h-[61px] mb-2 w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                </div>
+                <label for="password" class="pb-2.5">Пароль:</label>
+                <input type="password" x-model="password1" placeholder="Введите пароль"
+                       class="block h-[61px] mb-2 w-full border px-3 py-2" required>
+                <label for="password" class="pb-2.5">Подтвердите пароль:</label>
+                <input type="password" x-model="password2" placeholder="Подтвердите пароль"
+                       class="block h-[61px] mb-2 w-full border px-3 py-2" required>
+                <button type="submit"
+                        class="bg-[#186FD4] h-[61px] uppercase font-bold text-[13px] text-white px-4 py-2 mt-4">
+                    Зарегистрироваться
+                </button>
+            </form>
+
+            <p x-text="error" class="text-red-600 mt-2"></p>
+        </div>
+        <div class="flex flex-1 items-start border-l border-[#EAEAEA] pl-12">
+            <img class="mr-7" src="{% static 'images/vector.svg' %}"/>
+            <div>
+                <p class="font-medium text-3xl mb-10">Уже есть аккаунт?</p>
+                <p class="text-[#515151] mb-3">
+                    Перейдите к <span class="font-bold">авторизации</span> если у вас уже есть зарегистрированный
+                    аккаунт.
+                </p>
+                <a class="h-[61px] w-fit py-6 px-7 mt-4 flex items-center justify-center bg-[#011120] rounded-lg text-white uppercase font-bold"
+                   href="{% url 'users:login' %}">Авторизоваться</a><br>
+            </div>
+
+        </div>
     </div>
+{% endblock %}
+{% block script %}
+    <script src="https://unpkg.com/inputmask@5.0.8/dist/inputmask.min.js"></script>
+    <script>
+        Inputmask({mask: "+7 (999) 999-99-99"}).mask("#phone_number");
+    </script>
+    <script>
+        function registrationForm() {
+            return {
+                email: '',
+                phone_number: '',
+                firstname: '',
+                lastname: '',
+                password1: '',
+                password2: '',
+                error: '',
+
+                async submit() {
+                    this.error = '';
+
+                    // Проверка паролей
+                    if (this.password1 !== this.password2) {
+                        this.error = 'Пароли не совпадают';
+                        return;
+                    }
+                    this.phone_number = this.phone_number.replace(/[\s()-]/g, '');
+
+                    const response = await fetch('http://localhost:8000/api/v1/auth/registration/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: this.email,
+                            phone_number: this.phone_number,
+                            firstname: this.firstname,
+                            lastname: this.lastname,
+                            password1: this.password1,
+                            password2: this.password2,
+                        }),
+                        credentials: 'include',
+                    });
+
+                    const data = await response.json();
+
+                    console.log(data);
+
+                    if (!response.ok) {
+                        this.error = data.detail || 'Произошла ошибка при регистрации';
+                        return;
+                    }
+
+                    // Успешно — можно перенаправить:
+                    alert("На вашу почту отправлено сообщение")
+                }
+            }
+        }
+    </script>
 {% endblock %}

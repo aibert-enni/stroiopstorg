@@ -18,11 +18,49 @@
 </main>
 {% include 'common/footer.html' %}
 <script src="{% static 'jquery-3.7.1/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/api_fetcher.js' %}"></script>
 {% block script %}
 {% endblock %}
+<script src="{% static 'alphine/alphine.min.js' %}"></script>
+<script>
+    const user_profile_elem = document.querySelector('#user-profile-text');
+    const user_profile_btn = document.querySelector('#user-profile-btn');
+    const user_profile_text = document.querySelector('#user-profile-text');
+    api("api/v1/auth/user/", {
+        method: 'GET',
+        credentials: 'include'
+    }).then(response => response.json()).then(data => {
+        if (data.email) {
+            user_profile_elem.textContent = "Выйти";
+            user_profile_btn.addEventListener('click', () => {
+                api("api/v1/auth/logout/", {
+                    'method': 'POST',
+                    'credentials': 'include'
+                }).then(response => response.json()).then(data => {
+                    console.log(data);
+                })
+            })
+        } else {
+            user_profile_elem.textContent = "Войти";
+            user_profile_btn.addEventListener('click', () => {
+                window.location.href = "{% url 'users:login' %}";
+            })
+        }
+    }).catch(error => {
+        user_profile_elem.textContent = "Войти";
+        user_profile_btn.addEventListener('click', () => {
+            window.location.href = "{% url 'users:login' %}";
+        })
+    });
+
+</script>
 <script>
     const domen_url = 'http://localhost:8000';
-    
+
+    const api_url = domen_url + '/api/v1/';
+
+    const catalog_url = api_url + 'catalog/tree';
+
     const search_input = document.querySelector('#search-input');
 
     const blue_bg = document.querySelector('#blue-bg');
@@ -60,7 +98,7 @@
     async function catalog() {
         async function fetchCategories() {
             try {
-                const response = await fetch('/catalog/tree'); // Замените на ваш URL
+                const response = await fetch(catalog_url); // Замените на ваш URL
                 if (!response.ok) {
                     throw new Error(`HTTP ошибка! Статус: ${response.status}`);
                 }

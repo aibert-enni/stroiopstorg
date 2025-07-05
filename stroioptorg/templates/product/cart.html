@@ -1,64 +1,139 @@
 {% extends 'common/base.html' %}
+{% load static %}
 
 {% block content %}
-    <ul>
-        {% for cart in cart_products %}
-            <li id="cart-product-{{ cart.id }}">
-                <div>
-                    <div class="flex gap-5">
-                        {% csrf_token %}
-                        <p>{{ cart.product }}</p>
-                        <p>Количество:</p>
-                        <button id="product-decrement-btn">-</button>
-                        <p id="product-quantity">{{ cart.quantity }}</p>
-                        <button id="product-increment-btn">+</button>
-                        <button data-cart-id="{{ cart.id }}" id="delete-cart-btn">Удалить</button>
-                    </div>
-                    <button data-cart-id="{{ cart.id }}" id="update-cart-btn">Обновить корзину</button>
+    <div>
+        <h1 class="font-bold text-[48px] text-[#2C333D]">Корзина товаров</h1>
+        <div class="mt-10 mb-16 flex gap-5" x-data="cartProductsList()" x-init="load()">
+            <table class="cart-table">
+                <thead>
+                <tr class="border-b">
+                    <th class="text-left pl-5">Товар</th>
+                    <th class="text-left">Цена</th>
+                    <th class="text-left">Количество</th>
+                    <th class="text-left pr-5">Сумма</th>
+                </tr>
+                </thead>
+                <tbody class="font-normal">
+                <template x-for="product in products" :key="product.id">
+                    <tr class="border" :id="product.id">
+                        <td class="pr-5">
+                            <div class="flex gap-4">
+                                <img class="h-[90px] w-[90px]" :src="product.product.cover_url">
+                                <div>
+                                    <p class="text-left font-medium" x-text="product.product.name"></p>
+                                    <p class="text-left text-sm text-[#A8ADB2]">Артикул: <span
+                                            x-text="product.product.sku"></span></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="pr-5">
+                            <p class="text-[#003B73] text-xl whitespace-nowrap"><span
+                                    x-text="product.product.get_discount_price"></span>
+                                ₽</p>
+                            <p class="line-through text-[#8F9296]"><span x-text="product.product.price"></span> ₽</p>
+                        </td>
+                        <td class="pr-5">
+                            <div class="flex gap-3 items-center">
+                                <button class="btn-decrease w-[61px] h-[43px] rounded-3xl bg-[#F3F4F5]">-</button>
+                                <p class="quantity text-lg" x-text="product.quantity"></p>
+                                <button class="btn-increase w-[61px] h-[43px] rounded-3xl bg-[#F3F4F5]">+</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex w-full justify-between">
+                                <p class="text-[#003B73] text-xl whitespace-nowrap"><span
+                                        x-text="product.subtotal"></span> ₽</p>
+                                <button class="btn-delete ml-5"><img class="w-[18px] h-[16px]"
+                                                                     src="{% static 'images/trash-icon.svg' %}"/>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+                </tbody>
+            </table>
+            <div class="flex flex-col gap-6 w-[400px]">
+                <p class="font-medium text-xl text-left">Итого</p>
+                <div class="flex items-center gap-4">
+                    <p class="font-medium">Сумма</p>
+                    <div class="w-full h-[1px] border-b-2 border-dotted"></div>
+                    <p class="text-[#003B73] text-xl whitespace-nowrap"><span x-text="total"></span> ₽</p>
                 </div>
-            </li>
-        {% endfor %}
-    </ul>
+                <a class="h-[61px] mt-4 flex rounded-lg items-center justify-center bg-[#186FD4] text-white font-medium"
+                   href="{% url 'order:order' %}">Перейти к оформлению</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block script %}
     <script>
-        let counter = document.getElementById('product-quantity').innerHTML;
-        counter = parseInt(counter);
-        
-        const product_quantity = document.getElementById('product-quantity');
-        
-        const decrement_btn = document.getElementById('product-decrement-btn');
-        const increment_btn = document.getElementById('product-increment-btn');
-        
-        increment_btn.addEventListener('click', function () {
-            counter += 1;
-            product_quantity.innerHTML = counter;
-        })
+        function cartProductsList() {
+            return {
+                products: [],
+                total: 0,
+                async load() {
+                    await api('/api/v1/cart/', {
+                        method: 'GET',
+                        credentials: 'include'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.products = data.products;
+                            this.total = data.total_amount;
+                            console.log(data);
+                            this.$nextTick(() => {
+                                initEvents()
+                            })
+                        })
+                }
+            }
+        }
 
-        decrement_btn.addEventListener('click', function () {
-            counter -= 1;
-            product_quantity.innerHTML = counter;
-        })
+        function initEvents() {
+            const products_trs = document.querySelector('tbody').querySelectorAll('tr');
 
-        document.getElementById('update-cart-btn').addEventListener('click', (e) => {
-            const product_id = e.target.dataset.cartId;
-            const quantity = product_quantity.innerHTML;
-            UpdateProductCart(product_id, quantity);
-        });
-        
-        document.getElementById('delete-cart-btn').addEventListener('click', (e) => {
-            const product_id = e.target.dataset.cartId;
-            DeleteProductCart(product_id);
-        })
+            products_trs.forEach((tr) => {
+                const id = tr.getAttribute('id');
+                const quantity_elem = tr.querySelector('.quantity');
+                let quantity = parseInt(quantity_elem.textContent);
+
+                const btn_increase = tr.querySelector('.btn-increase');
+                const btn_decrease = tr.querySelector('.btn-decrease');
+                const btn_delete = tr.querySelector('.btn-delete');
+
+                btn_increase.addEventListener('click', () => {
+                    if (UpdateProductCart(id, quantity + 1)) {
+                        quantity = quantity + 1;
+                        quantity_elem.innerText = quantity;
+                    }
+                })
+
+                btn_decrease.addEventListener('click', () => {
+                    if (quantity < 2) {
+                        return;
+                    }
+                    if (UpdateProductCart(id, quantity - 1)) {
+                        quantity = quantity - 1;
+                        quantity_elem.innerText = quantity;
+                    }
+                })
+
+                btn_delete.addEventListener('click', () => {
+                    if (DeleteProductCart(id)) {
+                        tr.remove()
+                    }
+                })
+            })
+        }
 
         async function UpdateProductCart(cart_product_id, quantity) {
             try {
-                const response = await fetch('http://localhost:8000/cart/update/', {
+                const response = await fetch('http://localhost:8000{% url "api-product:cart-update-product" %}', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(), // Add the CSRF token in headers
                     },
                     body: JSON.stringify({ // Use 'body' instead of 'data'
                         cart_product_id: cart_product_id,
@@ -67,45 +142,28 @@
                 });
                 const result = await response.json();
                 console.log(result);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        
-        async function DeleteProductCart(cart_product_id) {
-            try {
-                const response = await fetch('http://localhost:8000/cart/update/', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(), // Add the CSRF token in headers
-                    },
-                    body: JSON.stringify({ // Use 'body' instead of 'data'
-                        cart_product_id: cart_product_id
-                    }),
-                });
-                
-                const result = await response.json();
-                console.log(result)
-                if (response.status === 200) {
-                    document.getElementById('cart-product-' + cart_product_id).remove();
+
+                if (result.ok) {
+                    return true;
                 }
             } catch (error) {
                 console.log(error);
+                return false;
             }
         }
 
-        function getCsrfToken() {
-            // Method 1: Using cookie
-            const cookieValue = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('csrftoken='))
-                ?.split('=')[1];
-
-            // Method 2: From meta tag (recommended)
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-
-            return csrfToken;
+        async function DeleteProductCart(cart_product_id) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/v1/cart/remove/${cart_product_id}`, {
+                    method: 'DELETE',
+                });
+                if (response.ok) {
+                    return true;
+                }
+            } catch (error) {
+                console.log(error);
+                return false;
+            }
         }
     </script>
 {% endblock %}

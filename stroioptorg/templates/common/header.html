@@ -76,24 +76,14 @@
             <a href="#" class="md:flex flex-col items-center  hidden"><img src="{% static 'images/gift-icon.svg' %}"
                                                                            alt="Иконка для акции"/>
                 <p class="text-[#6B7076] hidden md:block">Все акции</p></a>
-            {% if user.is_authenticated %}
-                <form method="post" action="{% url 'users:logout' %}">
-                    {% csrf_token %}
-                    <button class="flex flex-col items-center hover:*:text-black">
-                        <img class="w-[19px]"
-                             src="{% static 'images/profile-icon.svg' %}"
-                             alt="Иконка для входа"/>
-                        <p class="text-[#6B7076] hidden md:block">Выйти</p>
-                    </button>
-                </form>
-            {% else %}
-                <a href="{% url 'users:login' %}" class="flex flex-col items-center">
+            <div id="user-profile">
+                <button id="user-profile-btn" class="flex flex-col items-center hover:*:text-black">
                     <img class="w-[19px]"
                          src="{% static 'images/profile-icon.svg' %}"
                          alt="Иконка для входа"/>
-                    <p class="text-[#6B7076] hidden md:block">Войти</p>
-                </a>
-            {% endif %}
+                    <p id="user-profile-text" class="text-[#6B7076] hidden md:block">Войти</p>
+                </button>
+            </div>
             <a href="#" class="flex flex-col items-center"><img class="w-[13px]"
                                                                 src="{% static 'images/chart-icon.svg' %}"
                                                                 alt="Иконка для сравнения"/>
@@ -103,8 +93,8 @@
                                                                 alt="Иконка для избранных"/>
                 <p class="text-[#6B7076] hidden md:block">Избранное</p></a>
             <a href="{% url 'product:cart' %}" class="flex flex-col items-center"><img class="w-[21px]"
-                                                                src="{% static 'images/cart-icon.svg' %}"
-                                                                alt="Иконка для корзины"/>
+                                                                                       src="{% static 'images/cart-icon.svg' %}"
+                                                                                       alt="Иконка для корзины"/>
                 <p class="text-[#6B7076] hidden md:block">Корзина</p></a>
         </div>
         <div class="flex justify-between gap-[10px] md:gap-5 w-full">
